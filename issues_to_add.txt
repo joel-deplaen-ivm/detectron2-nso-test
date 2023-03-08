@@ -1,0 +1,32 @@
+create_json_script:
+split for test set
+
+save origin x and origin y
+
+tiling_script:
+Create bigger tiles
+
+organise tiling to deal with several tiles=>done
+
+sliding window instead of tiling?
+
+avoid black pixels during tiling
+
+check if tile size is the same as the medium paper
+
+Train_script
+add validation line for loss function
+
+add WB tool to train script
+
+New script
+Undersampling with GHSL or other: select based on landuse/landcover
+
+General
+Convert notebook to .py
+
+Transmission are next to pylones => how can the pylons improve the detection, check with job
+
+Check the precision of the annotation with Job
+
+Comparison with object detection instead of instance segmentation
