@@ -17,7 +17,7 @@ do
     filename=$(basename "$url")
 
     # Download the file using curl
-    if curl -u 'joel.deplaen:WelcomeToTheM4chine!' -O --ftp-pasv --ssl --insecure "$url"; then
+    if curl -u 'username:password!' -O --ftp-pasv --ssl --insecure "$url"; then
         echo "Downloaded $filename successfully"
     else
         echo "Error downloading $filename"
