@@ -8,7 +8,7 @@ Create bigger tiles to match substations size
 
 organise tiling to deal with several tiles=>done
 
-sliding window instead of tiling?
+sliding window instead of tiling?=>could but a stride in the tiling_script
 
 avoid black pixels during tiling
 
