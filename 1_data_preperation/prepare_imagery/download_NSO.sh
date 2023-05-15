@@ -8,7 +8,7 @@
 urls=()  # Initialize an empty array called 'urls'
 while IFS=, read -r url; do  # Loop through each line of the CSV file
     urls+=("$url")  # Add the current URL to the 'urls' array
-done < ftp_urls_test.csv  # Read from the CSV file called 'ftp_urls_test.csv'
+done < ftp_url_one_tile.csv.csv  # Read from the CSV file called 'ftp_urls_test.csv'
 
 # Make and move to the directory where the files will be downloaded
 mkdir -p NSO_raw  
