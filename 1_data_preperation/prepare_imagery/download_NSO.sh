@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ### This script reads a list of FTP URLs from a CSV file, downloads the corresponding files using curl, ###
-### unzips them, and moves the resulting TIFF files to a new directory. ###
+### unzips them, and moves the resulting TIFF files to /NSO/NSO_big_tiles . ###
 
 
 # Read the URLs from the CSV file
 urls=()  # Initialize an empty array called 'urls'
 while IFS=, read -r url; do  # Loop through each line of the CSV file
     urls+=("$url")  # Add the current URL to the 'urls' array
-done < ftp_url_one_tile.csv.csv  # Read from the CSV file called 'ftp_urls_test.csv'
+done < ftp_url_one_tile.csv  # Read from the CSV file called 'ftp_urls_test.csv'
 
 # Make and move to the directory where the files will be downloaded
 mkdir -p NSO_raw  
@@ -38,7 +38,8 @@ do
 done
 
 # Move .tif to NSO directory
-mkdir -p ../../NSO/  
-mv NSO_unzip/*.tif ../../NSO/  
+mkdir -p ../../NSO/
+mkdir -p ../../NSO/NSO_big_tiles
+mv NSO_unzip/*.tif ../../NSO/NSO_big_tiles  
 
 echo "Done downloading and organzing imagery dataset"
