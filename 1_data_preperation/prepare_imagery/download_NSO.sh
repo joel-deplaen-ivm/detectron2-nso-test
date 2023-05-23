@@ -8,7 +8,7 @@
 urls=()  # Initialize an empty array called 'urls'
 while IFS=, read -r url; do  # Loop through each line of the CSV file
     urls+=("$url")  # Add the current URL to the 'urls' array
-done < ftp_url_one_tile.csv  # Read from the CSV file called 'ftp_urls_test.csv'
+done < ftp_url_two_tiles.csv  # Read from the CSV file called 'ftp_urls_test.csv'
 
 # Make and move to the directory where the files will be downloaded
 mkdir -p NSO_raw  
@@ -21,7 +21,7 @@ do
     filename=$(basename "$url")  
 
     # Download the file using curl
-    if curl -u 'username:password' -O --ftp-pasv --ssl --insecure "$url"; then  
+    if curl -u 'joel.deplaen:p2RMhQWRs8P67si' -O --ftp-pasv --ssl --insecure "$url"; then  
         echo "Downloaded $filename successfully"  
     else
         echo "Error downloading $filename"  
@@ -38,8 +38,8 @@ do
 done
 
 # Move .tif to NSO directory
-mkdir -p ../../NSO/
-mkdir -p ../../NSO/NSO_big_tiles
-mv NSO_unzip/*.tif ../../NSO/NSO_big_tiles  
+mkdir -p ../../../NSO/
+mkdir -p ../../../NSO/NSO_big_tiles
+mv NSO_unzip/*.tif ../../../NSO/NSO_big_tiles  
 
 echo "Done downloading and organzing imagery dataset"
