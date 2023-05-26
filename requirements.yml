@@ -1,30 +1,30 @@
 name: nso
 
 dependencies:
-        - python>=3.8
-        - gdal
-        - numpy
-        - pandas
-        - shapely
-        - geopandas
-        - rasterio
-        - matplotlib
-        - cartopy
-        - tqdm
-        - pip
-        - jupyterlab
-        - jupyter 
-        #- pygeos
-        - pyproj
-        - descartes
-        # ‘to_geojson’ requires at least GEOS 3.10.0.
-        - geos
+        # - python>=3.8 
+        # - gdal 
+        # - numpy 
+        # - pandas
+        # - shapely
+        # - geopandas
+        # - rasterio
+        # - matplotlib
+        # - cartopy
+        # - tqdm
+        # - pip
+        # - jupyterlab
+        # - jupyter 
+        - pygeos # did not install
+        # - pyproj
+        # - descartes
+        - to_geojson requires at least GEOS 3.10.0. # did not install
+        # - geos
         - pip:
           # works for regular pip packages
-          #- torch==1.10.2
-          #- torchvision==0.11.3 --extra-index-url https://download.pytorch.org/whl/cu113
-          #- detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
-          - opencv-python
-          - setuptools==59.5.0
-          - geojson
-          - scikit-learn
+          # - torch==1.10.2 
+          # - torchvision==0.11.3 --extra-index-url https://download.pytorch.org/whl/cu113 #
+          # - detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html #
+          - opencv-python # did not install
+          # - setuptools==59.5.0
+          # - geojson
+          # - scikit-learn
