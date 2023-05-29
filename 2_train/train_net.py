@@ -168,12 +168,16 @@ def setup(args):
 
 
 def main(args):
-    # Spacenet
-    classes = ["building"]
+    # NSO dataset
+    classes = ["asset"]
+    colors = [(249, 180, 45)]
+    evaluator = ["coco"]
     
     for d in ["train", "val"]:
-        DatasetCatalog.register(d, lambda d=d: get_dataset_dicts(os.path.join("Spacenet", d)))
+        DatasetCatalog.register(d, lambda d=d: get_dataset_dicts(os.path.join("../NSO", d)))
         MetadataCatalog.get(d).thing_classes = classes
+        MetadataCatalog.get(d).thing_colors = colors
+        MetadataCatalog.get(d).evaluator_type = evaluator
     
     cfg = setup(args)
 
