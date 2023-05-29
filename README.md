@@ -73,9 +73,9 @@ Also in *subs_detection/scripts/extract_osm_sub.py*:
 
 gdal.SetConfigOption("OSM_CONFIG_FILE", os.path.join('..',"osmconf.ini"))"
 
-### 1.3 create_jsons_nso
+### 1.3 convert_tif_nso
 
-### 1.4 convert_tif_nso
+### 1.4 create_jsons_nso
 
 ### 1.5 plot_truth_coordinates
 
