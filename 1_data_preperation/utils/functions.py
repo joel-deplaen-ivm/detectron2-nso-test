@@ -96,8 +96,10 @@ def tif_to_png(files, path_to_files, dst, normalize=False):
     :rtype: None
     
     """
-
+    i=0
+    print('start converting')
     for item in tqdm(files, desc = f"Converting TIF images to PNG to {dst}", ncols=150, bar_format="{l_bar}{bar:10}{r_bar}"):
+        i+=1
         file_path = os.path.join(path_to_files, item)
         dst_path = os.path.join(dst, item.replace(".tif", ".png"))
         image = gdal.Open(file_path)
@@ -117,6 +119,9 @@ def tif_to_png(files, path_to_files, dst, normalize=False):
 
         image = np.dstack((array1, array2, array3))
         plt.imsave(dst_path, image)
+        if i==1000:
+            print('1000 done')
+            i=0
 
 
 def detectron_json(files, path_to_files, csv, num_dataset, train_val):
