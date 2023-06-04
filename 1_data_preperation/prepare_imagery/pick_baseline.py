@@ -20,11 +20,9 @@ df_ftp['wms_name'] = df_ftp['ftp_url'].apply(extract_name)
 df = pd.merge(df_wms_data, df_ftp, left_on='wms_name', right_on='wms_name')
 df['coordinate_str']=df['coordinate'].astype(str)
 df['file_name'] = df['wms_link'].apply(extract_filename)
-
 # merged_df['wms_name'].value_counts().tolist()
-df_baseline = df.sort_values('date',ascending=False).groupby('coordinate_str', as_index=False).head(1)
-df_baseline = df_baseline.reindex()
-df_baseline.to_csv('datafiles/baseline_input.csv',index=False)
+# df_baseline = df.sort_values('date',ascending=False).groupby('coordinate_str', as_index=False).head(1)
+df.to_csv('datafiles/whole_baseline_input.csv',index=False)
 
-df_filenames = df_baseline['file_name']
-df_filenames.to_csv('datafiles/filenames.csv',index=False)
+df_filenames = df['file_name']
+df_filenames.to_csv('datafiles/whole_filenames.csv',index=False)
