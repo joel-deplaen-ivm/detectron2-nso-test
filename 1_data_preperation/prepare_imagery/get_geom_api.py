@@ -5,6 +5,8 @@ import pandas as pd
 import ast
 
 df=pd.read_csv('datafiles/whole_input.csv')
+df_done=pd.read_json('datafiles/whole_wms_geom.jsonl', lines=True)
+df_done['name']
 
 def fetch_data(coord,date):
     username = 'alban'
@@ -58,7 +60,9 @@ def get_geom(response,name):
         print('geom dumped')
 
 df_unique = df.drop_duplicates(subset=['wms_name'])
-for i,row in df_unique[2:].iterrows():
+df_filtered = df_unique[~df_unique['wms_name'].isin(df_done['name'])]
+
+for i,row in df_filtered.iterrows():
     date = row['date']
     coord = ast.literal_eval(row['coordinate'])
     name = row['wms_name']
