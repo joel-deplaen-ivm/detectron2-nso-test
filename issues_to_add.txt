@@ -1,26 +1,13 @@
-create_json_script:
-split for test set
+env list of nso_tb instead of nso
+
+Remove pygeos for shapely in preperation script
 
 save origin x and origin y
 
-tiling_script:
-Create bigger tiles to match substations size
-
-organise tiling to deal with several tiles=>done
-
 sliding window instead of tiling?=>could but a stride in the tiling_script
-
-avoid black pixels during tiling
-
-check if tile size is the same as the medium paper
 
 Json_script:
 save origin x y of tile without annotation
-
-Train_script
-add validation line for loss function
-
-add WB tool to train script
 
 New script
 Undersampling with GHSL or other: select based on landuse/landcover
