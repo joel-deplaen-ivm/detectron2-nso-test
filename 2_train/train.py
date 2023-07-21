@@ -1,20 +1,25 @@
 """Train a model.
 
-Classes and functions to train a model based on othomosaics and corresponding
-manual crown data.
+Classes and functions to train a model based on othomosaics.
+edit from: https://github.com/PatBall1/detectree2/blob/master/detectree2/models/train.py
 """
 import datetime
-import glob
+#import glob
 import json
 import logging
 import os
 import random
 import time
 from pathlib import Path
-#from typing import Any, Dict, List
+import yaml
+from typing import Any, Dict, List
 
 import cv2
-import detectron2.data.transforms as T  # noqa:N812
+from detectron2.utils.visualizer import Visualizer
+from detectron2.utils.visualizer import ColorMode
+import matplotlib.pyplot as plt
+
+import detectron2.data.transforms as T 
 import detectron2.utils.comm as comm
 import numpy as np
 import torch
@@ -33,7 +38,7 @@ from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 from detectron2.structures import BoxMode
-from detectron2.utils.events import get_event_storage  # noqa:F401
+from detectron2.utils.events import get_event_storage
 from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
@@ -238,10 +243,10 @@ class MyTrainer(DefaultTrainer):
             T.RandomBrightness(0.8, 1.8),
             T.RandomContrast(0.6, 1.3),
             T.RandomSaturation(0.8, 1.4),
-            T.RandomRotation(angle=[90, 90], expand=False),
+            #T.RandomRotation(angle=[90, 90], expand=False),
             T.RandomLighting(0.7),
-            T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
-            T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
+            #T.RandomFlip(prob=0.4, horizontal=True, vertical=False),
+            #T.RandomFlip(prob=0.4, horizontal=False, vertical=True),
         ]
 
         if cfg.RESIZE:
@@ -291,7 +296,7 @@ class MyTrainer(DefaultTrainer):
 
 
 # Indicate to D2 how to read dataset if not in coco format:
-def get_dataset_dicts(img_dir):
+def get_dataset_dicts(img_dir, annotation_json):
     """Function that tells detectron2 know how to obtain a custom datasets by specifying it similarly to COCO’s annotations: see https://detectron2.readthedocs.io/en/latest/tutorials/datasets.html 
 
     Args:
@@ -300,7 +305,7 @@ def get_dataset_dicts(img_dir):
     Returns:
         list: list of dictionaries containing the information of the dataset
     """
-    json_file = os.path.join(img_dir, "via_region_data.json")
+    json_file = os.path.join(img_dir, annotation_json)
     with open(json_file) as f:
         imgs_anns = json.load(f)
     
@@ -344,186 +349,16 @@ def get_dataset_dicts(img_dir):
         dataset_dicts.append(record)
     return dataset_dicts
 
-# def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = None) -> List[Dict]:
-#     """Get the tree dictionaries.
-
-#     Args:
-#         directory: Path to directory
-#         classes: List of classes to include
-#         classes_at: Signifies which column (if any) corresponds to the class labels
-
-#     Returns:
-#         List of dictionaries corresponding to segmentations of trees. Each dictionary includes
-#         bounding box around tree and points tracing a polygon around a tree.
-#     """
-#     # filepath = '/content/drive/MyDrive/forestseg/paracou_data/Panayiotis_Outputs/220303_AllSpLabelled.gpkg'
-#     # datagpd = gpd.read_file(filepath)
-#     # List_Genus = datagpd.Genus_Species.to_list()
-#     # Genus_Species_UniqueList = list(set(List_Genus))
-
-#     #
-#     if classes is not None:
-#         # list_of_classes = crowns[variable].unique().tolist()
-#         classes = classes
-#     else:
-#         classes = ["tree"]
-#     # classes = Genus_Species_UniqueList #['tree'] # genus_species list
-#     dataset_dicts = []
-#     # for root, dirs, files in os.walk(train_location):
-#     #    for file in files:
-#     #        if file.endswith(".geojson"):
-#     #            print(os.path.join(root, file))
-
-#     for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
-#         json_file = os.path.join(directory, filename)
-#         with open(json_file) as f:
-#             img_anns = json.load(f)
-#         # Turn off type checking for annotations until we have a better solution
-#         record: Dict[str, Any] = {}
-
-#         # filename = os.path.join(directory, img_anns["imagePath"])
-#         filename = img_anns["imagePath"]
-
-#         # Make sure we have the correct height and width
-#         height, width = cv2.imread(filename).shape[:2]
-
-#         record["file_name"] = filename
-#         record["height"] = height
-#         record["width"] = width
-#         record["image_id"] = filename[0:400]
-#         record["annotations"] = {}
-#         # print(filename[0:400])
-
-#         objs = []
-#         for features in img_anns["features"]:
-#             anno = features["geometry"]
-#             # pdb.set_trace()
-#             # GenusSpecies = features['properties']['Genus_Species']
-#             px = [a[0] for a in anno["coordinates"][0]]
-#             py = [np.array(height) - a[1] for a in anno["coordinates"][0]]
-#             # print("### HERE IS PY ###", py)
-#             poly = [(x, y) for x, y in zip(px, py)]
-#             poly = [p for x in poly for p in x]
-#             # print("#### HERE ARE SOME POLYS #####", poly)
-#             if classes != ["tree"]:
-#                 obj = {
-#                     "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
-#                     "bbox_mode": BoxMode.XYXY_ABS,
-#                     "segmentation": [poly],
-#                     "category_id": classes.index(features["properties"][classes_at]),  # id
-#                     # "category_id": 0,  #id
-#                     "iscrowd": 0,
-#                 }
-#             else:
-#                 obj = {
-#                     "bbox": [np.min(px), np.min(py), np.max(px), np.max(py)],
-#                     "bbox_mode": BoxMode.XYXY_ABS,
-#                     "segmentation": [poly],
-#                     "category_id": 0,  # id
-#                     "iscrowd": 0,
-#                 }
-#             # pdb.set_trace()
-#             objs.append(obj)
-#             # print("#### HERE IS OBJS #####", objs)
-#         record["annotations"] = objs
-#         dataset_dicts.append(record)
-#     return dataset_dicts
-
-
-# def combine_dicts(root_dir: str,
-#                   val_dir: int,
-#                   mode: str = "train",
-#                   classes: List[str] = None,
-#                   classes_at: str = None) -> List[Dict]:
-#     """Join tree dicts from different directories.
-
-#     Args:
-#         root_dir:
-#         val_dir:
-
-#     Returns:
-#         Concatenated array of dictionaries over all directories
-#     """
-#     train_dirs = [os.path.join(root_dir, dir) for dir in os.listdir(root_dir)]
-#     if mode == "train":
-#         del train_dirs[(val_dir - 1)]
-#         tree_dicts = []
-#         for d in train_dirs:
-#             tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
-#     elif mode == "val":
-#         tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], classes=classes, classes_at=classes_at)
-#     elif mode == "full":
-#         tree_dicts = []
-#         for d in train_dirs:
-#             tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
-#     return tree_dicts
-
-
-# def get_filenames(directory: str):
-#     """Get the file names if no geojson is present.
-
-#     Allows for predictions where no delinations have been manually produced.
-
-#     Args:
-#         directory (str): directory of images to be predicted on
-#     """
-#     dataset_dicts = []
-#     files = glob.glob(directory + "*.png")
-#     for filename in [file for file in files]:
-#         file = {}
-#         filename = os.path.join(directory, filename)
-#         file["file_name"] = filename
-
-#         dataset_dicts.append(file)
-#     return dataset_dicts
-
-
-# def register_train_data(train_location,
-#                         name: str = "tree",
-#                         val_fold=None,
-#                         classes=None,
-#                         classes_at=None):
-#     """Register data for training and (optionally) validation.
-
-#     Args:
-#         train_location: directory containing training folds
-#         name: string to name data
-#         val_fold: fold assigned for validation and tuning. If not given,
-#         will take place on all folds.
-#     """
-#     if val_fold is not None:
-#         for d in ["train", "val"]:
-#             DatasetCatalog.register(name + "_" + d, lambda d=d: combine_dicts(train_location,
-#                                                                               val_fold, d,
-#                                                                               classes=classes, classes_at=classes_at))
-#             if classes is None:
-#                 MetadataCatalog.get(name + "_" + d).set(thing_classes=["tree"])
-#             else:
-#                 MetadataCatalog.get(name + "_" + d).set(thing_classes=classes)
-#     else:
-#         DatasetCatalog.register(name + "_" + "full", lambda d=d: combine_dicts(train_location,
-#                                                                                0, "full",
-#                                                                                classes=classes, classes_at=classes_at))
-#         if classes is None:
-#             MetadataCatalog.get(name + "_" + "full").set(thing_classes=["tree"])
-#         else:
-#             MetadataCatalog.get(name + "_" + "full").set(thing_classes=classes)
-
-
-# def read_data(out_dir):
-#     """Function that will read the classes that are recorded during tiling."""
-#     list = []
-#     out_tif = out_dir + 'classes.txt'
-#     # open file and read the content in a list
-#     with open(out_tif, 'r') as fp:
-#         for line in fp:
-#             # remove linebreak from a current name
-#             # linebreak is the last character of each line
-#             x = line[:-1]
-#             # add current item to the list
-#             list.append(x)
-#     return (list)
-
+def random_visu(dataset_dicts, metadata, num_image):
+    for d in random.sample(dataset_dicts, num_image):
+        img = cv2.imread(d["file_name"])
+        visualizer = Visualizer(img[:, :, ::-1], metadata=metadata, scale=1, instance_mode=ColorMode.IMAGE)
+        out = visualizer.draw_dataset_dict(d)
+        print(d["file_name"])
+        plt.figure(figsize=(20, 20))
+        #plt.imshow(out.get_image()[:, :, ::-1])#BGR to RGB
+        plt.imshow(out.get_image()[:, :, :])
+        plt.show()
 
 # def remove_registered_data(name="tree"):
 #     """Remove registered data from catalog.
@@ -571,8 +406,9 @@ def setup_cfg(
     eval_period=100,
     out_dir="../NSO/output",
     resize=False,
+    filter_empty_annot=False,
     ):
-    """Set up config object # noqa: D417.
+    """Set up config object
 
     Args:
         base_model: base pre-trained model from detectron2 model_zoo
@@ -620,8 +456,8 @@ def setup_cfg(
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
+    cfg.DATALOADER.FILTER_EMPTY_ANNOTATIONS = filter_empty_annot
     return cfg
-
 
 # def predictions_on_data(directory=None,
 #                         predictor=DefaultTrainer,
