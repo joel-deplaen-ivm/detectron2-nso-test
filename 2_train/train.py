@@ -46,6 +46,16 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 # from IPython.display import display
 # from PIL import Image
 
+# def set_output_dir(output_dir):
+#     """Get the name of the evaluation folder.
+
+#     Args:
+#         name (_type_): _description_
+
+#     Returns:
+#         _type_: _description_
+#     """
+#     return output_dir
 
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric.
@@ -183,6 +193,7 @@ class MyTrainer(DefaultTrainer):
 
     def __init__(self, cfg, patience):  # noqa: D107
         self.patience = patience
+        #JDP: check if uncommented on the output
         # self.resize = resize
         super().__init__(cfg)
 
@@ -270,9 +281,15 @@ class MyTrainer(DefaultTrainer):
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
         if output_folder is None:
-            os.makedirs("eval", exist_ok=True)
-            output_folder = "eval"
+            os.makedirs(os.path.join(cfg.OUTPUT_DIR, "eval"), exist_ok=True)
+            output_folder = os.path.join(cfg.OUTPUT_DIR, "eval")
         return COCOEvaluator(dataset_name, cfg, True, output_folder)
+    # @classmethod
+    # def build_evaluator(cls, cfg, dataset_name, output_folder=None):
+    #     if output_folder is None:
+    #         os.makedirs("../NSO/output/lr001_BS4_empty-annot_25", exist_ok=True)
+    #         output_folder = "../NSO/output/lr001_BS4_empty-annot_25"
+    #     return COCOEvaluator(dataset_name, cfg, True, output_folder)
 
     def build_hooks(self):
         hooks = super().build_hooks()
@@ -360,16 +377,62 @@ def random_visu(dataset_dicts, metadata, num_image):
         plt.imshow(out.get_image()[:, :, :])
         plt.show()
 
-# def remove_registered_data(name="tree"):
-#     """Remove registered data from catalog.
+def remove_registered_data():
+    """Remove registered data from catalog.
 
-#     Args:
-#         name: string of named registered data
-#     """
-#     for d in ["train", "val"]:
-#         DatasetCatalog.remove(name + "_" + d)
-#         MetadataCatalog.remove(name + "_" + d)
+    Args:
+        name: string of named registered data
+    """
+    for d in ["train", "val"]:
+        DatasetCatalog.remove(d)
+        MetadataCatalog.remove(d)
 
+def get_dataset_dicts_with_regions(img_dir, annotation_json):
+    json_file = os.path.join(img_dir, annotation_json)
+    with open(json_file) as f:
+        imgs_anns = json.load(f)
+
+    dataset_dicts = []
+    for idx, annots in enumerate(imgs_anns.values()):
+        if annots["regions"] == {}:
+            continue
+        
+        record = {}
+        
+        filename = os.path.join(img_dir, annots["filename"])
+        height, width = cv2.imread(filename).shape[:2]
+        
+        # Info on the tile .png file
+        record["file_name"] = filename
+        record["image_id"] = idx
+        record["height"] = height
+        record["width"] = width
+        
+        # Info on annotation
+        annotations = annots["regions"]
+        objs = []
+        for _, anno in annotations.items():
+            assert not anno["region_attributes"]
+            anno = anno["shape_attributes"]
+            px = anno["all_points_x"]
+            py = anno["all_points_y"]
+            poly = [(x + 0.5, y + 0.5) for x, y in zip(px, py)]
+            poly = [p for x in poly for p in x]
+
+            obj = {
+                "bbox": [np.min(px),
+                         np.min(py),
+                         np.max(px),
+                         np.max(py)
+                        ],
+                "bbox_mode": BoxMode.XYXY_ABS,
+                "segmentation": [poly],
+                "category_id": anno["category"]
+            }
+            objs.append(obj)
+        record["annotations"] = objs
+        dataset_dicts.append(record)
+    return dataset_dicts
 
 # def register_test_data(test_location, name="tree"):
 #     """Register data for testing."""
@@ -458,6 +521,24 @@ def setup_cfg(
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
     cfg.DATALOADER.FILTER_EMPTY_ANNOTATIONS = filter_empty_annot
     return cfg
+
+def find_best_model(folder_path, extension):
+    max_number = -1
+    target_file = None
+
+    for filename in os.listdir(folder_path):
+        if filename.endswith(extension) and not filename.startswith("model_0"):
+            name_parts = os.path.splitext(filename)[0].split('_')
+            if len(name_parts) > 1:
+                try:
+                    number = int(name_parts[-1])
+                    if number > max_number:
+                        max_number = number
+                        target_file = filename
+                except ValueError:
+                    continue
+
+    return os.path.join(folder_path, target_file) if target_file else None
 
 # def predictions_on_data(directory=None,
 #                         predictor=DefaultTrainer,
