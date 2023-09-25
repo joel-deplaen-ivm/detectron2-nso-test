@@ -46,17 +46,6 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 # from IPython.display import display
 # from PIL import Image
 
-# def set_output_dir(output_dir):
-#     """Get the name of the evaluation folder.
-
-#     Args:
-#         name (_type_): _description_
-
-#     Returns:
-#         _type_: _description_
-#     """
-#     return output_dir
-
 class LossEvalHook(HookBase):
     """Do inference and get the loss metric.
 
@@ -518,7 +507,13 @@ def setup_cfg(
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
-    cfg.INPUT.MIN_SIZE_TRAIN = 1000
+    cfg.INPUT.MIN_SIZE_TRAIN = (1000,)
+    cfg.INPUT.MIN_SIZE_TRAIN_SAMPLING = "choice"
+    cfg.INPUT.MAX_SIZE_TRAIN = 1000
+    cfg.INPUT.MIN_SIZE_TEST = 0
+    cfg.INPUT.MAX_SIZE_TEST = 1000
+    cfg.INPUT.RANDOM_FLIP = "none"
+    cfg.INPUT.CROP.ENABLED = False
     cfg.DATALOADER.FILTER_EMPTY_ANNOTATIONS = filter_empty_annot
     return cfg
 
